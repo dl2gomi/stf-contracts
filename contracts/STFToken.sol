@@ -7,7 +7,7 @@ import '@openzeppelin/contracts/access/Ownable.sol';
 contract STFToken is ERC20, Ownable {
   address public vault; // Address of the Vault contract
 
-  constructor() ERC20('Santistef', 'STFToken') Ownable(msg.sender) {}
+  constructor() ERC20('Santistef', 'STF') Ownable(msg.sender) {}
 
   // Modifier to restrict access to the Vault
   modifier onlyVault() {
