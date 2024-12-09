@@ -16,6 +16,7 @@ contract STFVault is Ownable {
   bool public isStarted;
 
   // invest and claim
+  mapping(address => uint256) public firstInvestedAt;
   mapping(address => uint256) public lastInvestedAt;
   mapping(address => mapping(string => uint256)) public profitClaimedAt;
   mapping(address => mapping(string => uint256)) public profitAmountClaimed;
@@ -66,6 +67,22 @@ contract STFVault is Ownable {
     rtok = STFToken(_rtok);
   }
 
+  function getCEOAddresses() external view returns (address[] memory) {
+    return ceoAddresses;
+  }
+
+  function getOperatorAddresses() external view returns (address[] memory) {
+    return operatorAddresses;
+  }
+
+  function getInvestors() external view returns (address[] memory) {
+    return investors;
+  }
+
+  function getTaxYears() external view returns (string[] memory) {
+    return taxYears;
+  }
+
   // Investors buy STFToken using USDT
   function invest(uint256 usdtAmount) external investmentStarted {
     // check if there is reward that is not claimed
@@ -92,8 +109,13 @@ contract STFVault is Ownable {
     // get the USDT and mint tokens
     usdt.transferFrom(msg.sender, address(this), usdtAmount);
     rtok.mint(msg.sender, tokensToMint);
+
+    // change the timestamps
     lastInvestedAt[msg.sender] = block.timestamp;
-    investors.push(msg.sender);
+    if (firstInvestedAt[msg.sender] == 0) {
+      firstInvestedAt[msg.sender] = block.timestamp;
+      investors.push(msg.sender); // add investor to array if not exists
+    }
   }
 
   // Investors claim profit
@@ -110,18 +132,14 @@ contract STFVault is Ownable {
     usdt.transfer(msg.sender, profitAmount);
   }
 
-  function listPossibleClaims(address _address) external view returns (string[] memory) {
-    require(lastInvestedAt[_address] != 0, 'This address is not an investor!');
-
+  function listAllClaims(address _address) external view returns (string[] memory) {
     string[] memory result = new string[](30);
     uint8 j = 0;
 
-    for (uint256 i = taxYears.length - 1; i >= 0; i--) {
-      if (taxDocuments[taxYears[i]].timestamp < lastInvestedAt[_address]) continue;
-      if (profitClaimedAt[_address][taxYears[i]] == 0) {
-        result[j] = taxYears[i];
-        j++;
-      }
+    for (uint256 i = taxYears.length; i > 0; i--) {
+      if (taxDocuments[taxYears[i - 1]].timestamp <= firstInvestedAt[_address]) break;
+      result[j] = taxYears[i - 1];
+      j++;
     }
 
     return result;
