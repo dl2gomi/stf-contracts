@@ -136,6 +136,8 @@ contract STFVault is Ownable {
     string[] memory result = new string[](30);
     uint8 j = 0;
 
+    if (firstInvestedAt[_address] == 0) return result;
+
     for (uint256 i = taxYears.length; i > 0; i--) {
       if (taxDocuments[taxYears[i - 1]].timestamp <= firstInvestedAt[_address]) break;
       result[j] = taxYears[i - 1];
@@ -166,7 +168,7 @@ contract STFVault is Ownable {
     bool pivot = false;
     for (uint256 i = 0; i < ceoAddresses.length - 1; i++) {
       if (ceoAddresses[i] == _address) pivot = true;
-      if (pivot == true) ceoAddresses[i] == ceoAddresses[i + 1];
+      if (pivot == true) ceoAddresses[i] = ceoAddresses[i + 1];
     }
     ceoAddresses.pop();
   }
@@ -192,7 +194,7 @@ contract STFVault is Ownable {
     bool pivot = false;
     for (uint256 i = 0; i < operatorAddresses.length - 1; i++) {
       if (operatorAddresses[i] == _address) pivot = true;
-      if (pivot == true) operatorAddresses[i] == operatorAddresses[i + 1];
+      if (pivot == true) operatorAddresses[i] = operatorAddresses[i + 1];
     }
     operatorAddresses.pop();
   }
