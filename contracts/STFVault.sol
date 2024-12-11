@@ -239,6 +239,16 @@ contract STFVault is Ownable {
 
   // upload tax documents
   function uploadTaxDocs(string memory taxYear, string memory cid, uint256 profit) external onlyAdmin {
+    bool isExists = false;
+
+    for (uint256 i = 0; i < taxYears.length; i++) {
+      if (keccak256(bytes(taxYears[i])) == keccak256(bytes(taxYear))) {
+        isExists = true;
+        break;
+      }
+    }
+
+    require(isExists == false, string(abi.encodePacked('A tax document already exists for ', taxYear)));
     require(bytes(cid).length > 0, 'Invalid IPFS hash');
     require(bytes(taxYear).length > 0, 'Invalid Tax year');
 
